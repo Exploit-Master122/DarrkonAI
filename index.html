@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Darrkon AI</title>
+  <meta name="theme-color" content="#0b1220" />
+  <style>
+    :root{
+      --bg-deep:#070b14;            /* dark blue */
+      --bg-deeper:#05060c;
+      --accent:#8c0f1a;             /* dark red */
+      --accent-2:#0e2a6a;           /* deep blue */
+      --text:#e7ebff;
+      --muted:#96a0c3;
+      --glass:rgba(10,14,26,.55);
+      --glass-2:rgba(20,26,44,.45);
+      --ring:rgba(140,15,26,.6);
+      --shadow:0 20px 40px rgba(0,0,0,.45);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 800px at 20% 10%, #111a35 0%, #0b1220 45%, #060910 100%),
+                  radial-gradient(900px 600px at 80% 120%, #1d0820 0%, #0b1220 55%, #060910 100%);
+      background-attachment: fixed;
+      overflow: hidden; /* particles live behind */
+    }
+
+    /* Particle canvas sits behind everything */
+    #particles{position:fixed; inset:0; z-index:-1; background:transparent}
+
+    /* Top wrapper */
+    .wrap{position:relative; display:flex; flex-direction:column; gap:18px; min-height:100%; padding:28px;}
+
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:18px;
+      padding:20px 24px; border-radius:var(--radius);
+      background:linear-gradient(180deg,var(--glass),var(--glass-2));
+      border:1px solid rgba(255,255,255,.06);
+      box-shadow: var(--shadow), 0 0 0 1px rgba(140,15,26,.25) inset;
+      backdrop-filter: blur(10px) saturate(120%);
+    }
+    .brand{display:flex; align-items:center; gap:16px}
+    .logo{
+      width:52px; height:52px; border-radius:14px;
+      background: conic-gradient(from 200deg, var(--accent) 0 40%, #1f2b7a 40% 75%, #2b0a12 75% 100%);
+      box-shadow:inset 0 0 20px rgba(255,255,255,.08), 0 8px 24px rgba(140,15,26,.35);
+      position:relative;
+    }
+    .logo::after{
+      content:""; position:absolute; inset:4px; border-radius:10px;
+      background:radial-gradient(120% 120% at 30% 30%, rgba(255,255,255,.18), rgba(255,255,255,0) 60%);
+    }
+    h1{margin:0; font-size: clamp(22px, 3vw, 32px); letter-spacing:.4px}
+    .tag{color:var(--muted); font-size:clamp(12px,1.8vw,14px)}
+
+    /* Controls */
+    .controls{
+      display:grid; grid-template-columns: repeat(9, minmax(0,1fr)); gap:10px;
+      background:linear-gradient(180deg,var(--glass),transparent);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:var(--radius);
+      padding:10px; backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn{
+      position:relative; isolation:isolate;
+      appearance:none; border:none; cursor:pointer;
+      padding:14px 10px; border-radius:16px; font-weight:700;
+      color:var(--text); letter-spacing:.25px; text-transform:uppercase;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)) padding-box,
+        linear-gradient(140deg, rgba(140,15,26,.65), rgba(25,77,178,.65)) border-box;
+      border:1px solid transparent;
+      box-shadow: 0 10px 20px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.05) inset;
+      transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-2px); filter:saturate(1.2); box-shadow: 0 16px 28px rgba(0,0,0,.45)}
+    .btn:active{ transform: translateY(0); filter:saturate(1.4)}
+    .btn small{display:block; opacity:.7; font-weight:500; text-transform:none}
+
+    /* Iframe panel */
+    .panel{
+      position:relative; flex:1; min-height: 55vh; max-height: calc(100vh - 260px);
+      background:linear-gradient(180deg,var(--glass),var(--glass-2));
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:var(--radius);
+      overflow:hidden; box-shadow: var(--shadow);
+    }
+
+    .toolbar{
+      position:absolute; top:10px; right:10px; display:flex; gap:8px; z-index:3;
+    }
+    .iconbtn{
+      border:none; border-radius:12px; padding:10px; cursor:pointer; background:rgba(255,255,255,.08);
+      color:var(--text); backdrop-filter: blur(6px); box-shadow: 0 6px 16px rgba(0,0,0,.35);
+    }
+
+    iframe{
+      position:absolute; inset:0; width:100%; height:100%; border:0; background:#0a0f1c;
+    }
+
+    .placeholder{
+      position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:8px; color:var(--muted); text-align:center; padding:24px; z-index:1;
+    }
+    .pulse{ width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 0 rgba(140,15,26,.9); animation:pulse 1.6s infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(140,15,26,.8)}70%{box-shadow:0 0 0 22px rgba(140,15,26,0)}100%{box-shadow:0 0 0 0 rgba(140,15,26,0)}}
+
+    .notice{
+      position:absolute; left:50%; bottom:18px; transform:translateX(-50%);
+      background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.06); color:var(--text);
+      padding:10px 14px; border-radius:12px; font-size:12px; z-index:4;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px){ .controls{grid-template-columns: repeat(3, minmax(0,1fr));} }
+    @media (max-width: 640px){ .controls{grid-template-columns: repeat(2, minmax(0,1fr));} .wrap{padding:18px} }
+  </style>
+</head>
+<body>
+  <canvas id="particles" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Darrkon AI</h1>
+          <div class="tag">Smarter,free-sourced solutions solutions for a better Earth.</div>
+        </div>
+      </div>
+      <div class="tag">Darrkon Network | Exploit-Master122</div>
+    </header>
+
+    <section class="controls" aria-label="AI shortcuts">
+      <button class="btn" data-url="https://chat.qwen.ai">Qwen AI <small>Advanced version for coding,with common sense.(Qwen-3 Coder)</small></button>
+      <button class="btn" data-url="https://openai.com">ChatGPT <small>A better language model,good for essays and ideas.(GPT 5)</small></button>
+      <button class="btn" data-url="https://claude.ai">Claude <small>A good version for language.Not too advanced,not too simple. (Claude Opus)</small></button>
+      <button class="btn" data-url="https://www.perplexity.ai">Perplexity <small></small></button>
+      <button class="btn" data-url="https://gemini.google.com">Gemini <small>gemini.google.com</small></button>
+      <button class="btn" data-url="https://www.meta.ai">Llama / Meta AI <small>meta.ai</small></button>
+      <button class="btn" data-url="https://chat.mistral.ai">Mistral <small>chat.mistral.ai</small></button>
+      <button class="btn" data-url="https://chat.deepseek.com">DeepSeek <small>chat.deepseek.com</small></button>
+      <button class="btn" id="fullscreen">Fullscreen <small>toggle</small></button>
+    </section>
+
+    <main class="panel" id="panel">
+      <div class="toolbar">
+        <button class="iconbtn" id="openNew" title="Open current site in a new tab">↗</button>
+        <button class="iconbtn" id="reload" title="Reload current site">⟳</button>
+      </div>
+      <div class="placeholder" id="placeholder">
+        <div class="pulse"></div>
+        <h2 style="margin:8px 0 0">Choose a service above</h2>
+        <p style="max-width:680px">Click one of the 8 service buttons to load its site inside the embedded panel. Some sites may block embedding for security; if that happens, use the ↗ button to open it in a new tab or the Fullscreen toggle for distraction‑free viewing.</p>
+      </div>
+      <div class="notice" id="notice" style="display:none"></div>
+      <iframe id="view" title="Embedded site" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-pointer-lock allow-downloads"></iframe>
+    </main>
+  </div>
+
+  <script>
+    // ===== Particles =====
+    (()=>{
+      const c=document.getElementById('particles');
+      const ctx=c.getContext('2d');
+      let W,H,PR,DPR=window.devicePixelRatio||1; const P=[]; const N=120; // particle count
+      const R=[['#10224d',1],['#8c0f1a',1],['#142b66',1]];
+      const rand=(a,b)=>Math.random()*(b-a)+a;
+      function resize(){W=window.innerWidth; H=window.innerHeight; PR=DPR; c.width=W*PR; c.height=H*PR; c.style.width=W+'px'; c.style.height=H+'px'; ctx.setTransform(PR,0,0,PR,0,0)}
+      function init(){P.length=0; for(let i=0;i<N;i++){P.push({x:rand(0,W),y:rand(0,H),vx:rand(-.25,.25),vy:rand(-.25,.25),r:rand(1.2,2.6),h:rand(0,Math.PI*2)})}}
+      function draw(){ctx.clearRect(0,0,W,H); for(const p of P){p.x+=p.vx; p.y+=p.vy; p.h+=0.002; if(p.x<0||p.x>W) p.vx*=-1; if(p.y<0||p.y>H) p.vy*=-1; const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*6); g.addColorStop(0,'rgba(255,255,255,.25)'); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); }
+        // link lines
+        for(let i=0;i<P.length;i++){ for(let j=i+1;j<P.length;j++){ const a=P[i], b=P[j]; const dx=a.x-b.x, dy=a.y-b.y; const d=Math.hypot(dx,dy); if(d<110){ ctx.globalAlpha = 1 - d/110; ctx.strokeStyle = d%2<1? 'rgba(20,42,106,.45)' : 'rgba(140,15,26,.35)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); ctx.globalAlpha=1; } } }
+        requestAnimationFrame(draw);
+      }
+      resize(); init(); draw(); window.addEventListener('resize',()=>{resize(); init()});
+    })();
+
+    // ===== App logic =====
+    const buttons = Array.from(document.querySelectorAll('.btn'));
+    const iframe = document.getElementById('view');
+    const placeholder = document.getElementById('placeholder');
+    const notice = document.getElementById('notice');
+    const panel = document.getElementById('panel');
+    const openNew = document.getElementById('openNew');
+    const reloadBtn = document.getElementById('reload');
+
+    let currentURL = null;
+
+    function setActive(btn){
+      buttons.forEach(b=> b.dataset.active = (b===btn));
+      buttons.forEach(b=> b.style.outline = b===btn ? '2px solid var(--ring)' : 'none');
+    }
+
+    function loadURL(url, btn){
+      currentURL = url;
+      placeholder.style.display='none';
+      notice.style.display='block';
+      notice.textContent = 'Loading ' + url + ' …';
+      iframe.src = url;
+      setActive(btn);
+      // Show a helpful hint if the site blocks embedding
+      let hinted=false;
+      const hintTimer = setTimeout(()=>{
+        if(!hinted){ notice.innerHTML = 'If the site does not appear, it may block embedding (X‑Frame‑Options). <a href="#" id="openLink">Open in a new tab</a>.'; const link = document.getElementById('openLink'); link.addEventListener('click', (e)=>{ e.preventDefault(); if(currentURL) window.open(currentURL, '_blank');}); hinted=true; }
+      }, 2000);
+      iframe.addEventListener('load', ()=>{ clearTimeout(hintTimer); notice.textContent = 'Loaded: ' + url; setTimeout(()=> notice.style.display='none', 2200); }, {once:true});
+    }
+
+    // Button handlers
+    buttons.forEach(btn=>{
+      if(btn.id==='fullscreen') return;
+      btn.addEventListener('click',()=> loadURL(btn.dataset.url, btn));
+    });
+
+    // Open in new tab and reload helpers
+    openNew.addEventListener('click', ()=>{ if(currentURL) window.open(currentURL, '_blank'); });
+    reloadBtn.addEventListener('click', ()=>{ if(currentURL) iframe.src = currentURL; });
+
+    // Fullscreen toggle
+    document.getElementById('fullscreen').addEventListener('click', async ()=>{
+      try{
+        if(!document.fullscreenElement){ await panel.requestFullscreen(); }
+        else{ await document.exitFullscreen(); }
+      }catch(e){ alert('Fullscreen not supported in this context.'); }
+    });
+  </script>
+</body>
+</html>
